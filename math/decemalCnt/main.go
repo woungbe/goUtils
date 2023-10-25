@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	// price := "0.01010000"
-	price := "10"
+	price := "0.01010000"
+	// price := "10"
 	b, aa := DecimalCount(price)
 	if b == false {
 		fmt.Println("소수점 몇째라인지 파악할 수 없습니다.")
@@ -32,7 +32,7 @@ func DecimalCount(price string) (bool, int) {
 	strValue := strconv.FormatFloat(value, 'f', -1, 64)
 	parts := strings.Split(strValue, ".")
 	if len(parts) == 2 {
-		decimalPlaces := len(parts[1])
+		decimalPlaces = len(parts[1])
 		fmt.Println("소수점 이하 자릿수:", decimalPlaces)
 	} else {
 		if len(parts[0]) == 1 {
