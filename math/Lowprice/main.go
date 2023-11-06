@@ -18,8 +18,8 @@ func main() {
 	// float64 => string  으로 변경됨 !
 	coinSize := 0
 	// tmp := MinCoinSize("26524", "5", "0.00001", coinSize)
-
-	tmp2 := MinCoinSize("0.5077", "5", "0.0001", coinSize)
+	// tmp2 := MinCoinSize("0.1244", "5", "0.0001", coinSize)
+	tmp2 := MinCoinSize("0.1211000", "5", "1", coinSize)
 
 	fmt.Println("tmp : ", tmp2)
 	formatString := fmt.Sprintf("%%.%df\n", coinSize)
