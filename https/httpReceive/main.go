@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func main() {
@@ -27,7 +28,8 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Callback URL로 데이터 전달 (여기서는 간단히 출력)
 	callbackURL := string(body)
-	fmt.Printf("Received Callback URL: %s\n", callbackURL)
+	fmt.Println("time :", time.Now())
+	fmt.Printf("%s Received Callback URL: %s\n", time.Now().String(), callbackURL)
 
 	// 요청에 대한 응답
 	w.WriteHeader(http.StatusOK)
