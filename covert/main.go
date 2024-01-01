@@ -15,4 +15,12 @@ func main() {
 	str := utils.String(0.5123)
 	fmt.Println("utils.String : ", str, reflect.TypeOf(str))
 
+	var i float32
+	i = 120.123
+	i2, err := utils.Int64(i)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Int64 : ", i2, reflect.TypeOf(i2))
+
 }

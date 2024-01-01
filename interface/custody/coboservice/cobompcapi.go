@@ -8,6 +8,12 @@ import (
 )
 
 type CoboMPCAPI struct {
+	Helloworld string
+}
+
+func GetCoboMPCAPI() *CoboMPCAPI {
+	tt := new(CoboMPCAPI)
+	return tt
 }
 
 func (ty *CoboMPCAPI) GetSupportCoin() (*simplejson.Json, *defined.ApiError) {

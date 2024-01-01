@@ -18,7 +18,11 @@ func main() {
 	webapi.GetSupportCoin()
 	webapi.GetSupportedCoins("BTCUSDT")
 
-	webapi = &coboservice.CoboMPCAPI{}
+	// webapi := &coboservice.CoboMPCAPI{}
+	// webapi.GetSupportCoin()
+	// webapi.GetSupportedCoins("BTCUSDT")
+
+	webapi = coboservice.GetCoboMPCAPI()
 	webapi.GetSupportCoin()
 	webapi.GetSupportedCoins("BTCUSDT")
 

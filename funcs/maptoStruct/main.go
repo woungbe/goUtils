@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+
+	"woungbe.utils/covert/utils"
 )
 
 // MapToStruct 함수는 맵을 구조체로 변환하는 함수입니다.
 // mapData: 변환할 맵 데이터
 // result: 변환된 구조체 결과
-func MapToStruct(mapData map[string]interface{}, result interface{}) error {
+func MapToStruct(tag string, mapData map[string]interface{}, result interface{}) error {
 	// 입력된 결과 인터페이스의 유효성을 검사
 	resultValue := reflect.ValueOf(result)
 	if resultValue.Kind() != reflect.Ptr || resultValue.Elem().Kind() != reflect.Struct {
@@ -22,7 +24,7 @@ func MapToStruct(mapData map[string]interface{}, result interface{}) error {
 	// 맵 데이터를 구조체로 복사
 	for i := 0; i < resultType.NumField(); i++ {
 		field := resultType.Field(i)
-		fieldName := field.Tag.Get("json")
+		fieldName := field.Tag.Get(tag)
 		mapValue, exists := mapData[fieldName]
 		if !exists {
 			continue // 맵에 필드 이름이 없는 경우 스킵
@@ -51,24 +53,90 @@ func assignValue(mapValue interface{}, fieldValue *reflect.Value) error {
 	fieldType := fieldValue.Type()
 	mapValueType := reflect.TypeOf(mapValue)
 
-	// 맵 값 타입을 구조체 필드 타입으로 변환 가능한지 확인
-	if mapValueType.ConvertibleTo(fieldType) {
-		*fieldValue = reflect.ValueOf(mapValue).Convert(fieldType)
-		return nil
-	}
-
-	// 문자열(string)을 int64로 변환해서 할당하는 로직 추가
-	if fieldType.Kind() == reflect.Int64 && mapValueType.Kind() == reflect.String {
-		strValue := mapValue.(string)
-		intValue, err := strconv.ParseInt(strValue, 10, 64)
-		if err != nil {
-			return err
+	if mapValueType == nil {
+		if fieldType.String() == "string" {
+			fieldValue.SetString("")
+			return nil
 		}
-		fieldValue.SetInt(intValue)
-		return nil
+
+		// 문자열(string)을 int64로 변환해서 할당하는 로직 추가
+		if fieldType.String() == "int64" {
+			fieldValue.SetInt(0)
+			return nil
+		}
+
+		// bool
+		if fieldType.String() == "bool" {
+			fieldValue.SetBool(false)
+			return nil
+		}
+
+		// float64
+		if fieldType.String() == "float64" {
+			fieldValue.SetFloat(0)
+			return nil
+		}
+
+	} else {
+		// 맵 값 타입을 구조체 필드 타입으로 변환 가능한지 확인
+		if mapValueType.ConvertibleTo(fieldType) {
+			*fieldValue = reflect.ValueOf(mapValue).Convert(fieldType)
+			return nil
+		}
+
+		if fieldType.Kind() == reflect.Int {
+			strValue := mapValue.(string)
+			val, err := utils.Int64(strValue)
+			if err != nil {
+				return err
+			}
+			fieldValue.SetInt(val)
+			return nil
+		}
+
+		// 문자열(string)을 int64로 변환해서 할당하는 로직 추가
+		if fieldType.Kind() == reflect.Int64 {
+			strValue := mapValue.(string)
+			intValue, err := strconv.ParseInt(strValue, 10, 64)
+			if err != nil {
+				return err
+			}
+			fieldValue.SetInt(intValue)
+			return nil
+		}
+
+		// bool
+		if fieldType.Kind() == reflect.Bool {
+			var send bool
+			boolValue := mapValue.(string)
+
+			tmp, err := utils.Int(boolValue)
+			if err != nil {
+				return err
+			}
+
+			if tmp == 0 {
+				send = false
+			} else {
+				send = true
+			}
+			fieldValue.SetBool(send)
+			return nil
+		}
+
+		// float64
+		if fieldType.Kind() == reflect.Float64 {
+			strValue := mapValue.(string)
+			floatval, err := utils.Float64(strValue)
+			if err != nil {
+				return err
+			}
+			fieldValue.SetFloat(floatval)
+			return nil
+		}
 	}
 
-	// 나머지 타입 변환 로직 추가 (float 등)
+	// 나머지 타입 변환 로직 추가
 
 	return fmt.Errorf("타입 변환 불가능: %v → %v", mapValueType, fieldType)
 }
@@ -92,7 +160,7 @@ func main() {
 	var myStruct MyStruct
 
 	// MapToStruct 함수를 사용하여 맵을 구조체로 변환
-	if err := MapToStruct(mapData, &myStruct); err != nil {
+	if err := MapToStruct("json", mapData, &myStruct); err != nil {
 		fmt.Println("오류:", err)
 		return
 	}
