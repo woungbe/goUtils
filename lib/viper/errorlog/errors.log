@@ -1,0 +1,5 @@
+time="2024-04-30T18:57:03+09:00" level=error msg="설정 로드 실패: Config File \"config\" Not Found in \"[C:\\\\study\\\\golang\\\\goUtils\\\\lib\\\\viper\\\\errorlog]\""
+time="2024-04-30T18:59:06+09:00" level=error msg="설정 로드 실패: Config File \"config\" Not Found in \"[C:\\\\study\\\\golang\\\\goUtils\\\\lib\\\\viper\\\\errorlog]\""
+time="2024-04-30T18:59:29+09:00" level=error msg="설정 로드 실패: Config File \"config\" Not Found in \"[C:\\\\study\\\\golang\\\\goUtils\\\\lib\\\\viper\\\\errorlog]\""
+time="2024-04-30T19:00:24+09:00" level=info msg="설정 로드 성공"
+time="2024-04-30T19:00:59+09:00" level=info msg="설정 로드 성공"

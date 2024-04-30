@@ -23,8 +23,8 @@ func main() {
 	router.HandleFunc("/items", GetItems).Methods("GET")
 	router.HandleFunc("/items/{id}", GetItem).Methods("GET")
 	router.HandleFunc("/items", CreateItem).Methods("POST")
-	router.HandleFunc("/items/{id}", UpdateItem).Methods("PUT")
-	router.HandleFunc("/items/{id}", DeleteItem).Methods("DELETE")
+	router.HandleFunc("/items", UpdateItem).Methods("PUT")
+	router.HandleFunc("/items", DeleteItem).Methods("DELETE")
 
 	// 라우터를 설정하고 웹 서버 시작
 	http.Handle("/", router)
@@ -35,22 +35,22 @@ func main() {
 func GetItems(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(items)
+	json.NewEncoder(w).Encode("이렇게라도 보내겠습니다.")
 }
 
 func GetItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, _ := strconv.Atoi(params["id"])
-
-	for _, item := range items {
-		if item.ID == id {
-			json.NewEncoder(w).Encode(item)
-			return
-		}
-	}
-
-	json.NewEncoder(w).Encode(&Item{})
+	fmt.Println("id : ", id)
+	// for _, item := range items {
+	// 	if item.ID == id {
+	// 		json.NewEncoder(w).Encode(item)
+	// 		return
+	// 	}
+	// }
+	json.NewEncoder(w).Encode(id)
+	// json.NewEncoder(w).Encode(&Item{})
 }
 
 func CreateItem(w http.ResponseWriter, r *http.Request) {

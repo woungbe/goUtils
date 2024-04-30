@@ -17,11 +17,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(symbol, interval, startTime, endTime, limit)
 
-	if FindStringError(symbol, interval, startTime, endTime, limit) {
-		fmt.Println("에러 엔딩")
-		fmt.Fprintln(w, "에러 엔딩, ", symbol, interval, startTime, endTime, limit)
-		return
-	}
+	// if FindStringError(symbol, interval, startTime, endTime, limit) {
+	// 	fmt.Println("에러 엔딩")
+	// 	fmt.Fprintln(w, "에러 엔딩, ", symbol, interval, startTime, endTime, limit)
+	// 	return
+	// }
 
 	// 응답으로 파라미터 값 반환
 	fmt.Fprintln(w, "Hello, ", symbol, interval, startTime, endTime, limit)
@@ -41,5 +41,5 @@ func FindStringError(aa ...string) bool {
 func main() {
 	fmt.Println("서버 시작!!")
 	http.HandleFunc("/", handler)     // 루트 경로 핸들러 설정
-	http.ListenAndServe(":8080", nil) // 서버 시작
+	http.ListenAndServe(":9910", nil) // 서버 시작
 }

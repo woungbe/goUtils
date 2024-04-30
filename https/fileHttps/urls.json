@@ -1,0 +1,14 @@
+[
+    {
+        "url": "/handler1",
+        "types": "json"
+    },
+    {
+        "url": "/handler2",
+        "types": "string"
+    },
+    {
+        "url": "/handler3",
+        "types": "string"
+    }
+]

@@ -1,0 +1,2 @@
+[url "ssh://git@13.124.117.109/home/git/go"]
+    insteadOf = https:///dfin.git/

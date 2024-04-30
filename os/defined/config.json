@@ -1,0 +1,3 @@
+{
+    "Config":[{"UserIDX": 1033, "Symbol": "COEUSDT", "MMCountMin": 10, "MMCountMax": 15, "MMTimeMin": 1, "MMTimeMax": 5, "MMCostRangeMin": 10, "MMCostRangeMax": 50, "MMOPTMaxCount": 300, "MMOPTType": "BUY", "MMType": "RAND", "MMStatus": 1, "ABRangeTickMin": 4, "ABRangeTickMax": 20, "ABCountMin": 4, "ABCountMax": 12, "ABTimeMin": 1, "ABTimeMax": 3, "ABotStatus": 1}]
+}

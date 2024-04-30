@@ -1,0 +1,14 @@
+{
+	"Users": [
+		{
+			"UserIDX": 1033,
+			"UserID": "woube4",
+			"Passwd": "1234"
+		},
+		{
+			"UserIDX": 1029,
+			"UserID": "selab.park@gmail.com",
+			"Passwd": "1234"
+		}
+	]
+}

@@ -2,6 +2,7 @@ package clientconnect
 
 import (
 	"encoding/json"
+	"fmt"
 
 	// "go/pawnet///pawlog"
 	"net/http"
@@ -402,4 +403,16 @@ func (ty *ClientConnector) messagePasering(msg []byte) {
 			}
 		}
 	}()
+
+	var packetdata map[string]interface{}
+	jer := json.Unmarshal(msg, &packetdata)
+	if jer != nil {
+		ty.con.Close()
+		return
+	}
+	if val, ok := packetdata["p"]; ok {
+		price := val.(string)
+		fmt.Println("message : ", price)
+	}
+
 }

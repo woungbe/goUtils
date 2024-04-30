@@ -1,0 +1,10 @@
+{
+  "name":"woungbe",
+  "port":1,
+  "general.prefix": {
+    "port":2
+  },
+  "general.prefix.port":3,
+  "MYAPP_PORT":9999,
+  "MYAPP_HOST":"127.0.0.1"
+}
