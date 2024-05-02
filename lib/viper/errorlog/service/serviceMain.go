@@ -33,7 +33,7 @@ func Init(path string) {
 }
 
 func LoggerError(msg ...interface{}) {
-	LogsPTR.Logger.Errorf(msg...)
+	LogsPTR.Logger.Errorf("Error ", msg...)
 }
 
 func LoggerInfo(msg ...interface{}) {
