@@ -7,13 +7,26 @@ import (
 )
 
 func main() {
-	price := "0.01010000"
-	// price := "10"
-	b, aa := DecimalCount(price)
-	if b == false {
+	price1 := "0.01010000"
+	b, aa := DecimalCount(price1)
+	if !b {
 		fmt.Println("소수점 몇째라인지 파악할 수 없습니다.")
 	}
 	fmt.Println(aa)
+
+
+
+	price2 := "0.00000001"
+	c, cc := DecimalCount(price2)
+	if !c {
+		fmt.Println("소수점 몇째라인지 파악할 수 없습니다.")
+	}
+	fmt.Println(cc)
+
+
+	price3 := "18.110000000000"
+	i := GetFloatDotPos(price3)
+	fmt.Println(i)
 
 }
 
@@ -21,7 +34,6 @@ func main() {
 func DecimalCount(price string) (bool, int) {
 	value, err := strconv.ParseFloat(price, 64)
 	if err != nil {
-		fmt.Println("부동소수점 변환 오류:", err)
 		return false, -1
 	}
 
@@ -33,7 +45,6 @@ func DecimalCount(price string) (bool, int) {
 	parts := strings.Split(strValue, ".")
 	if len(parts) == 2 {
 		decimalPlaces = len(parts[1])
-		fmt.Println("소수점 이하 자릿수:", decimalPlaces)
 	} else {
 		if len(parts[0]) == 1 {
 			i, _ := strconv.Atoi(parts[0])
@@ -41,9 +52,19 @@ func DecimalCount(price string) (bool, int) {
 				return true, 0
 			}
 		}
-		fmt.Println("부동소수점 형식이 아닙니다.")
 		return false, decimalPlaces
 	}
-
 	return true, decimalPlaces
+}
+
+
+func GetFloatDotPos(fData string) int {
+	if fData == "" {
+		return 0
+	}
+	tmp := strings.Split(fData, ".")
+	if len(tmp) > 1 {
+		return len(tmp[1])
+	}
+	return 0
 }

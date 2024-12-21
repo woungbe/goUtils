@@ -23,4 +23,9 @@ func main() {
 	}
 	fmt.Println("Int64 : ", i2, reflect.TypeOf(i2))
 
+	secretEncKey := ""
+	becData := []byte(secretEncKey)
+	bytelen := utils.CheckByteLen(becData)
+	fmt.Println("bytelen : ", bytelen)
+
 }

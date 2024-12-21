@@ -19,7 +19,9 @@ func main() {
 	// 1695483000
 	// 1695483000000
 
+	fmt.Println("변환된 시간:", resultTime.Unix())
 	fmt.Println("변환된 시간:", resultTime.UnixMilli())
+
 }
 
 func StringToTime(input string, layout string) (time.Time, error) {

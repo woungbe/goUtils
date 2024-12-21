@@ -121,3 +121,12 @@ func TestCreateMuiOrderTakeProfit(t *testing.T) {
 	}
 	fmt.Println(res)
 }
+
+func TestCancelOrder(t *testing.T) {
+	// (*futures.CancelOrderResponse, error)
+	res, err := GetUsrs().CancelOrder("BIGTIMEUSDT", "6xxCNgCTmmxlFHQnEzaih8")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", res)
+}

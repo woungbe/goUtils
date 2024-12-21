@@ -1,14 +1,14 @@
 package wsSample
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
-
-const BaseSpotWSURL = "wss://stream.binance.com:9443/ws/" //사용자 웹소켓 연결 URL
 
 type callBackFunc_onConnect func()
 type callBackFunc_onUnConnect func()
@@ -17,125 +17,105 @@ type callBackFunc_onMessage func(msg []byte)
 type BinanceUserWSObject struct {
 	con         *websocket.Conn
 	bBreakWrite chan bool
-	mListenKey  string //웹소켓 리슨키
+	mListenKey  string // 웹소켓 리슨키
 
-	bConnected   bool //연결 상태
-	mMenualClose bool //수동 연결 해지 시 true
+	bConnected   bool // 연결 상태
+	mMenualClose bool // 수동 연결 해지 시 true
 
+	send           chan []byte
 	mCB_onConnect   callBackFunc_onConnect
 	mCB_onUnConnect callBackFunc_onUnConnect
 	mCB_onMessage   callBackFunc_onMessage
 
 	// Send pings to peer with this period. Must be less than pongWait.
-	mPingPeriod int64 //= (pongWait * 9) / 10
+	mPingPeriod int64 // = (pongWait * 9) / 10
 	mwriteWait  int64
+	Url         string
 }
 
-// Init 객체 초기화
-func (ty *BinanceUserWSObject) Init(userListenKey string) error {
-	defer func() {
-		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
-		}
-	}()
-
-	ty.mMenualClose = false
+// Init initializes the WebSocket object
+func (ty *BinanceUserWSObject) Init(listenKey string, url string) {
+	ty.mListenKey = listenKey
+	ty.Url = url
 	ty.bBreakWrite = make(chan bool)
+	ty.send = make(chan []byte)
 	ty.mwriteWait = int64(10 * time.Second)
 	pongWait := int64(60 * time.Second)
 	ty.mPingPeriod = (pongWait * 9) / 10
-
-	ty.mListenKey = userListenKey
 	ty.bConnected = false
-	return nil
+	ty.mMenualClose = false
 }
 
-// SetCallbackFunc 콜백설정
-func (ty *BinanceUserWSObject) SetCallbackFunc(cbOnConnect callBackFunc_onConnect, cbOnUnConnect callBackFunc_onUnConnect, cbOnMessage callBackFunc_onMessage) {
-	ty.mCB_onConnect = cbOnConnect
-	ty.mCB_onUnConnect = cbOnUnConnect
-	ty.mCB_onMessage = cbOnMessage
+// SetCallbackFunc sets callback functions
+func (ty *BinanceUserWSObject) SetCallbackFunc(onConnect callBackFunc_onConnect, onUnConnect callBackFunc_onUnConnect, onMessage callBackFunc_onMessage) {
+	ty.mCB_onConnect = onConnect
+	ty.mCB_onUnConnect = onUnConnect
+	ty.mCB_onMessage = onMessage
 }
+
+// IsConnect returns the connection status
 func (ty *BinanceUserWSObject) IsConnect() bool {
 	return ty.bConnected
 }
 
-// clientConnect 웹소켓연결
+// ClientConnect establishes a WebSocket connection
 func (ty *BinanceUserWSObject) ClientConnect() bool {
-	defer func() {
-		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
-		}
-	}()
-
-	strUrl := fmt.Sprintf("%s%s", BaseSpotWSURL, ty.mListenKey)
+	strUrl := fmt.Sprintf("%s%s", ty.Url, ty.mListenKey)
 	r, _ := http.NewRequest("GET", strUrl, nil)
 	r.Header.Add("Content-Type", "application/json")
 	c, _, err := websocket.DefaultDialer.Dial(strUrl, nil)
-	ty.con = c
 	if err != nil {
-		// pawlog.Error("Error", "msg", err.Error())
+		log.Printf("WebSocket connection failed: %v", err)
 		return false
 	}
+
+	ty.con = c
 	ty.bConnected = true
+	log.Println("WebSocket connected")
 	ty.procClient()
 	return true
 }
 
-// Close 연결해제
+// Close terminates the WebSocket connection
 func (ty *BinanceUserWSObject) Close() {
-	defer func() {
-		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
-		}
-	}()
+	if ty.mMenualClose {
+		return
+	}
 
 	ty.mMenualClose = true
 	if ty.bBreakWrite != nil {
-		ty.bBreakWrite <- true
+		close(ty.bBreakWrite)
 	}
 	if ty.con != nil {
 		ty.con.Close()
 	}
 	ty.bConnected = false
+	log.Println("WebSocket closed")
 }
 
 func (ty *BinanceUserWSObject) onConnected() {
-	defer func() {
-		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
-		}
-	}()
 	if ty.mCB_onConnect != nil {
 		ty.mCB_onConnect()
 	}
 }
 
 func (ty *BinanceUserWSObject) onUnconnected() {
-	defer func() {
-		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
-		}
-	}()
-	//msg := fmt.Sprintf("Binance UnConnected")
-	//// pawlog.Info(msg)
-	ty.bBreakWrite <- true
-
-	if !ty.mMenualClose && ty.bConnected && ty.mCB_onUnConnect != nil {
+	if ty.mCB_onUnConnect != nil {
 		ty.mCB_onUnConnect()
 	}
 	ty.bConnected = false
+	log.Println("WebSocket disconnected")
 }
 
 func (ty *BinanceUserWSObject) procClient() {
-	go ty.ReadMessage()
-	go ty.WriteMessage()
+	go ty.readMessage()
+	go ty.writeMessage()
 }
 
-func (ty *BinanceUserWSObject) ReadMessage() {
+func (ty *BinanceUserWSObject) readMessage() {
 	defer func() {
 		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
+			log.Printf("readMessage panic: %v", err)
 		}
 		if ty.con != nil {
 			ty.con.Close()
@@ -144,48 +124,77 @@ func (ty *BinanceUserWSObject) ReadMessage() {
 	}()
 
 	ty.onConnected()
-
-	ty.con.SetReadLimit(81920) //최대 읽기 버퍼 사이즈
+	ty.con.SetReadLimit(81920)
 	for {
-		if ty.con != nil {
-			_, message, err := ty.con.ReadMessage()
-			if err != nil {
-				return
-			}
-			ty.messagePasering(message)
+		_, message, err := ty.con.ReadMessage()
+		if err != nil {
+			log.Printf("Read error: %v", err)
+			ty.detectDisconnection(err)
+			return
+		}
+		if ty.mCB_onMessage != nil {
+			ty.mCB_onMessage(message)
 		}
 	}
 }
 
-func (ty *BinanceUserWSObject) WriteMessage() {
+func (ty *BinanceUserWSObject) writeMessage() {
 	ticker := time.NewTicker(time.Duration(ty.mPingPeriod))
 	defer func() {
 		ticker.Stop()
 		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
+			log.Printf("writeMessage panic: %v", err)
 		}
 	}()
+
 	for {
 		select {
 		case <-ty.bBreakWrite:
 			return
+		case message, ok := <-ty.send:
+			if !ok {
+				return
+			}
+			if err := ty.con.WriteMessage(websocket.TextMessage, message); err != nil {
+				log.Printf("Write error: %v", err)
+				ty.detectDisconnection(err)
+				return
+			}
 		case <-ticker.C:
-			ty.con.SetWriteDeadline(time.Now().Add(time.Duration(ty.mwriteWait)))
-			if err := ty.con.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+			if err := ty.con.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Printf("Ping error: %v", err)
+				ty.detectDisconnection(err)
 				return
 			}
 		}
 	}
 }
 
-// messagePasering 메시지 파싱
-func (ty *BinanceUserWSObject) messagePasering(msg []byte) {
-	defer func() {
-		if err := recover(); err != nil {
-			// pawlog.Error("Crit Panic", "Error", err)
+func (ty *BinanceUserWSObject) SendMessage(message string) {
+	if ty == nil || ty.con == nil || !ty.bConnected {
+		return
+	}
+	ty.send <- []byte(message)
+}
+
+// Reconnect handles WebSocket reconnection logic
+func (ty *BinanceUserWSObject) Reconnect() {
+	log.Println("Attempting to reconnect...")
+	for {
+		if ty.ClientConnect() {
+			log.Println("Reconnected successfully")
+			return
 		}
-	}()
-	if ty.mCB_onMessage != nil {
-		ty.mCB_onMessage(msg)
+		log.Println("Reconnect failed, retrying in 5 seconds...")
+		time.Sleep(5 * time.Second)
+	}
+}
+
+// detectDisconnection detects WebSocket disconnection and triggers reconnection
+func (ty *BinanceUserWSObject) detectDisconnection(err error) {
+	log.Printf("Connection lost: %v", err)
+	if ty.bConnected {
+		ty.bConnected = false
+		go ty.Reconnect()
 	}
 }
